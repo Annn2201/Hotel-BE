@@ -1,0 +1,29 @@
+server:
+  port: 8080
+
+spring:
+  main:
+    allow-bean-definition-overriding: true
+  application:
+    name: API-doan
+  datasource:
+    url: jdbc:mysql://localhost:3307/khachsan_doan
+    username: root
+    password: 123456
+    driver-class-name: com.mysql.cj.jdbc.Driver
+  jpa:
+    database-platform: org.hibernate.dialect.MySQL8Dialect
+    hibernate:
+      ddl-auto: update
+    generate-ddl: false
+    show-sql: true
+  thymeleaf:
+    cache: false
+    enabled: true
+minio:
+  bucket:
+    name: rent4u
+  access:
+    key: minioadmin
+    secret: minioadmin
+  url: http://127.0.0.1:9000
