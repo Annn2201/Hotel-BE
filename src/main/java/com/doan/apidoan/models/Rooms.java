@@ -1,7 +1,9 @@
 package com.doan.apidoan.models;
 
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.util.Objects;
@@ -9,6 +11,8 @@ import java.util.Objects;
 @Entity
 @Getter
 @Setter
+@AllArgsConstructor
+@NoArgsConstructor
 public class Rooms {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Id
@@ -30,16 +34,4 @@ public class Rooms {
     @JoinColumn(name = "user")
     private Users user;
 
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        Rooms rooms = (Rooms) o;
-        return roomId == rooms.roomId && Objects.equals(roomCode, rooms.roomCode) && Objects.equals(roomType, rooms.roomType) && Objects.equals(primePerNight, rooms.primePerNight) && Objects.equals(availableRoom, rooms.availableRoom) && Objects.equals(user, rooms.user);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(roomId, roomCode, roomType, primePerNight, availableRoom, user);
-    }
 }
