@@ -8,4 +8,8 @@ public class CustomException extends RuntimeException{
         super(message);
         this.httpStatus = HttpStatus.INTERNAL_SERVER_ERROR;
     }
+    public CustomException(String message, HttpStatus status) {
+        super(message);
+        this.httpStatus = status;
+    }
 }
