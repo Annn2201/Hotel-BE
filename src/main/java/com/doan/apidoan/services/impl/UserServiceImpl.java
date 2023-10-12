@@ -47,4 +47,9 @@ public class UserServiceImpl implements UserService {
         BeanUtils.copyProperties(user, userDTO);
         return userDTO;
     }
+
+    @Override
+    public Users findUserByUsername(String username) {
+        return userRepository.findByUsername(username).orElseThrow(() -> new CustomException("Không tìm thấy user", HttpStatus.BAD_REQUEST));
+    }
 }

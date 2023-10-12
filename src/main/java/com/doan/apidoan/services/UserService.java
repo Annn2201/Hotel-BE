@@ -8,4 +8,5 @@ import org.springframework.http.ResponseEntity;
 public interface UserService {
     ResponseEntity<?> saveUser(Users user);
     UserDTO getDetailUser(LoginDTO loginDTO);
+    Users findUserByUsername(String username);
 }

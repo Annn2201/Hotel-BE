@@ -6,6 +6,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.time.LocalDateTime;
+import java.util.Date;
 import java.util.Objects;
 
 @Entity
@@ -22,16 +24,20 @@ public class Rooms {
     @Column(name = "room_code")
     private String roomCode;
     @Basic
-    @Column(name = "room_type")
-    private String roomType;
-    @Basic
-    @Column(name = "prime_per_night")
-    private Long primePerNight;
-    @Basic
-    @Column(name = "available_room")
-    private String availableRoom;
+    @Column(name = "price_per_night")
+    private Long pricePerNight;
     @ManyToOne
     @JoinColumn(name = "user")
     private Users user;
-
+    @ManyToOne
+    @JoinColumn(name = "type_id")
+    private RoomTypes roomType;
+    @ManyToOne
+    @JoinColumn(name = "rank_id")
+    private RoomRanks roomRank;
+    private String description;
+    private LocalDateTime checkInTime;
+    private LocalDateTime checkOutTime;
+    private int population;
+    private String roomName;
 }

@@ -28,4 +28,4 @@ minio:
     secret: minioadmin
   url: http://127.0.0.1:9000
 secret: thangnaonhoduoccaichuoinaytaogoibangcuj2hjk23h4o23kejfn2pi3kj42kl3jfno2i3j2okn3f2oi3jro2i3j4
-jwtExpiration: 360000
+jwtExpiration: 36000000
