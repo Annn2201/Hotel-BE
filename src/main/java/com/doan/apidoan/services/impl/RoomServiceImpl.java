@@ -3,35 +3,26 @@ package com.doan.apidoan.services.impl;
 import com.doan.apidoan.dtos.PagingDTO;
 import com.doan.apidoan.dtos.RoomDTO;
 import com.doan.apidoan.exceptions.CustomException;
-import com.doan.apidoan.models.RoomRanks;
-import com.doan.apidoan.models.RoomTypes;
-import com.doan.apidoan.models.Rooms;
-import com.doan.apidoan.models.Users;
+import com.doan.apidoan.models.*;
 import com.doan.apidoan.repositories.RoomRankRepository;
 import com.doan.apidoan.repositories.RoomRepository;
 import com.doan.apidoan.repositories.RoomTypeRepository;
+import com.doan.apidoan.repositories.RoomUserRepository;
 import com.doan.apidoan.services.RoomService;
-import jakarta.persistence.criteria.Join;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.persistence.criteria.Predicate;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.BeanUtils;
-import org.springframework.context.annotation.Bean;
-import org.springframework.data.auditing.CurrentDateTimeProvider;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
-import org.springframework.util.StringUtils;
 
-import java.time.LocalDateTime;
-import java.time.temporal.ChronoUnit;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Objects;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.util.*;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
+
 
 @Service
 @RequiredArgsConstructor
@@ -39,60 +30,106 @@ public class RoomServiceImpl implements RoomService {
     private final RoomRepository roomRepository;
     private final RoomRankRepository rankRepository;
     private final RoomTypeRepository typeRepository;
-    public List<RoomDTO> findAll(String rankName, String typeName) {
+    private final RoomUserRepository roomUserRepository;
+    private final ObjectMapper objectMapper;
+    public List<RoomDTO> findAll(String rankName, String typeName, String sortBy) {
         Specification<Rooms> spec = (root, query, criteriaBuilder) -> {
             List<Predicate> predicates = new ArrayList<>();
 
             if (rankName != null) {
                 RoomRanks rank = rankRepository.findByRankName(rankName)
-                        .orElseThrow(() -> new CustomException("Không thấy rank này"));
+                        .orElseThrow(() -> new CustomException("Khong tim thay hang phong nay", HttpStatus.BAD_REQUEST));
                 predicates.add(criteriaBuilder.equal(root.get("roomRank"), rank));
             }
 
             if (typeName != null) {
                 RoomTypes type = typeRepository.findByTypeName(typeName)
-                        .orElseThrow(() -> new CustomException("Không thấy type này"));
+                        .orElseThrow(() -> new CustomException("Khong tim thay loai phong nay", HttpStatus.BAD_REQUEST));
                 predicates.add(criteriaBuilder.equal(root.get("roomType"), type));
             }
 
             return criteriaBuilder.and(predicates.toArray(new Predicate[0]));
         };
         List<Rooms> rooms = roomRepository.findAll(spec);
-        List<RoomDTO> roomDTOList = rooms.stream()
-                .map(q -> RoomDTO.builder()
-                        .roomName(q.getRoomName())
-                        .roomCode(q.getRoomCode())
-                        .roomRank(q.getRoomRank().getRankName())
-                        .roomType(q.getRoomType().getTypeName())
-                        .pricePerNight(q.getPricePerNight())
-                        .description(q.getDescription())
-                        .build())
+        List<RoomDTO> roomDTOs = rooms.stream()
+                .map(q -> {
+                    List<String> imageUrls = q.getRoomImage().stream()
+                            .map(Image::getImageUrl)
+                            .collect(Collectors.toList());
+                    return RoomDTO.builder()
+                            .roomName(q.getRoomName())
+                            .roomCode(q.getRoomCode())
+                            .roomRank(q.getRoomRank().getRankName())
+                            .roomType(q.getRoomType().getTypeName())
+                            .pricePerNight(q.getPricePerNight())
+                            .description(q.getDescription())
+                            .population(q.getPopulation())
+                            .images(imageUrls)
+                            .build();
+                })
                 .collect(Collectors.toList());
-        return roomDTOList;
+
+        if ("population".equals(sortBy)) {
+            roomDTOs.sort(Comparator.comparing(RoomDTO::getPopulation).reversed());
+        } else if ("otherField".equals(sortBy)) {
+            // Sắp xếp theo trường khác nếu cần
+        }
+        return roomDTOs;
+
     }
 
     @Override
     public RoomDTO getRoomByRoomCode(String roomCode) {
         Rooms room = roomRepository.findByRoomCode(roomCode).orElseThrow(() -> new CustomException("Khoont thấy phòng này", HttpStatus.BAD_REQUEST));
-        RoomDTO roomDTO = RoomDTO.builder()
+        List<Image> imageList = room.getRoomImage();
+        List<String> imageUrl = new ArrayList<>();
+        imageList.forEach(image -> {
+            imageUrl.add(image.getImageUrl());
+        });
+        return RoomDTO.builder()
+                .roomCode(room.getRoomCode())
                 .roomName(room.getRoomName())
                 .roomType(room.getRoomType().getTypeName())
                 .roomRank(room.getRoomRank().getRankName())
                 .description(room.getDescription())
                 .pricePerNight(room.getPricePerNight())
+                .population(room.getPopulation())
+                .images(imageUrl)
                 .build();
-        return roomDTO;
     }
 
     @Override
-    public void bookRoomByUser(Users users, String roomCode) {
-        LocalDateTime currentDate = LocalDateTime.now();
-        LocalDateTime checkInTime = currentDate.plus(2, ChronoUnit.DAYS);
+    public void bookRoomByUser(Users users, String roomCode, String startDate, String endDate) {
+        AtomicInteger countAvailableDay = new AtomicInteger();
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("EEE MMM dd yyyy");
+        LocalDate localStartDate = LocalDate.parse(startDate,formatter);
+        LocalDate localEndDate = LocalDate.parse(endDate,formatter);
         Rooms rooms = roomRepository.findByRoomCode(roomCode).orElseThrow(() -> new CustomException("Không tìm thấy phòng", HttpStatus.BAD_REQUEST));
-        rooms.setUser(users);
-        rooms.setCheckInTime(checkInTime);
-        rooms.setCheckOutTime(checkInTime.plus(2, ChronoUnit.DAYS));
-        roomRepository.save(rooms);
+        List<RoomUser> roomUserList = roomUserRepository.findByRoomsId(rooms.getRoomId());
+        if (roomUserList.isEmpty()) {
+            RoomUser newRoomUser = new RoomUser();
+            newRoomUser.setUsersId(users.getUserId());
+            newRoomUser.setRoomsId(rooms.getRoomId());
+            newRoomUser.setStartDate(localStartDate);
+            newRoomUser.setEndDate(localEndDate);
+            roomUserRepository.save(newRoomUser);
+        } else {
+            roomUserList.forEach(roomUser -> {
+                if(localStartDate.isEqual(roomUser.getEndDate())
+                || localStartDate.isAfter(roomUser.getEndDate())) {
+                    countAvailableDay.getAndIncrement();
+                }
+                if (countAvailableDay.get() != 0) {
+                    RoomUser newRoomUser = new RoomUser();
+                    newRoomUser.setUsersId(users.getUserId());
+                    newRoomUser.setRoomsId(rooms.getRoomId());
+                    newRoomUser.setStartDate(localStartDate);
+                    newRoomUser.setEndDate(localEndDate);
+                    roomUserRepository.save(newRoomUser);
+                }
+            });
+        }
+
     }
 
 

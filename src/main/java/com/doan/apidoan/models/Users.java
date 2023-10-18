@@ -45,15 +45,14 @@ public class Users implements Serializable, UserDetails {
     private String password;
     @Basic
     @Column(name = "identify_number")
-    private String identifyNumber;
-
-    @OneToMany(mappedBy = "user")
-    List<Rooms> rooms;
+    private String identifyNumber;;
     @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(name = "users_roles",
             joinColumns = @JoinColumn(name = "user_id"),
             inverseJoinColumns = @JoinColumn(name = "role_id"))
     private List<Roles> userRole = new ArrayList<>();
+    @ManyToMany(mappedBy = "roomUser")
+    private List<Rooms> roomsList = new ArrayList<>();
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {

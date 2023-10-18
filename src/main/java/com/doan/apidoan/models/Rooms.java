@@ -6,8 +6,11 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 import java.util.Objects;
 
 @Entity
@@ -19,16 +22,13 @@ public class Rooms {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Id
     @Column(name = "room_id")
-    private long roomId;
+    private Long roomId;
     @Basic
     @Column(name = "room_code")
     private String roomCode;
     @Basic
     @Column(name = "price_per_night")
-    private Long pricePerNight;
-    @ManyToOne
-    @JoinColumn(name = "user")
-    private Users user;
+    private Double pricePerNight;
     @ManyToOne
     @JoinColumn(name = "type_id")
     private RoomTypes roomType;
@@ -36,8 +36,18 @@ public class Rooms {
     @JoinColumn(name = "rank_id")
     private RoomRanks roomRank;
     private String description;
-    private LocalDateTime checkInTime;
-    private LocalDateTime checkOutTime;
-    private int population;
+    private Integer population;
     private String roomName;
+    private LocalDate startDate;
+    private LocalDate endDate;
+    @ManyToMany(fetch = FetchType.EAGER)
+    @JoinTable(name = "room_image",
+            joinColumns = @JoinColumn(name = "room_id"),
+            inverseJoinColumns = @JoinColumn(name = "image_id"))
+    private List<Image> roomImage = new ArrayList<>();
+    @ManyToMany(fetch = FetchType.EAGER)
+    @JoinTable(name = "room_user",
+            joinColumns = @JoinColumn(name = "rooms_id"),
+            inverseJoinColumns = @JoinColumn(name = "users_id"))
+    private List<Users> roomUser = new ArrayList<>();
 }
