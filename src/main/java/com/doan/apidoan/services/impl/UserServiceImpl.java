@@ -1,6 +1,5 @@
 package com.doan.apidoan.services.impl;
 
-import com.doan.apidoan.dtos.LoginDTO;
 import com.doan.apidoan.dtos.UserDTO;
 import com.doan.apidoan.dtos.response.ResponseMessage;
 import com.doan.apidoan.exceptions.CustomException;
@@ -10,7 +9,6 @@ import com.doan.apidoan.repositories.RoleRepository;
 import com.doan.apidoan.repositories.UserRepository;
 import com.doan.apidoan.services.UserService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.BeanUtils;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -41,11 +39,13 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public UserDTO getDetailUser(LoginDTO loginDTO) {
-        Users user = userRepository.findByUsername(loginDTO.getUsername()).orElseThrow(() -> new CustomException("Khong tim thay user"));
-        UserDTO userDTO = new UserDTO();
-        BeanUtils.copyProperties(user, userDTO);
-        return userDTO;
+    public void updateUserDetail(Users user, UserDTO userDTO) {
+        Users userWantToUpdate = userRepository.findByUsername(user.getUsername()).orElseThrow(() -> new CustomException("Khong tim thay user"));
+        userWantToUpdate.setFirstName(userDTO.getFirstName());
+        userWantToUpdate.setLastName(userDTO.getLastName());
+        userWantToUpdate.setPhone(userDTO.getPhone());
+        userWantToUpdate.setEmail(userDTO.getEmail());
+        userRepository.save(userWantToUpdate);
     }
 
     @Override

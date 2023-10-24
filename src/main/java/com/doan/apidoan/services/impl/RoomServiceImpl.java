@@ -72,7 +72,6 @@ public class RoomServiceImpl implements RoomService {
         if ("population".equals(sortBy)) {
             roomDTOs.sort(Comparator.comparing(RoomDTO::getPopulation).reversed());
         } else if ("otherField".equals(sortBy)) {
-            // Sắp xếp theo trường khác nếu cần
         }
         return roomDTOs;
 
@@ -119,19 +118,49 @@ public class RoomServiceImpl implements RoomService {
                 || localStartDate.isAfter(roomUser.getEndDate())) {
                     countAvailableDay.getAndIncrement();
                 }
-                if (countAvailableDay.get() != 0) {
-                    RoomUser newRoomUser = new RoomUser();
-                    newRoomUser.setUsersId(users.getUserId());
-                    newRoomUser.setRoomsId(rooms.getRoomId());
-                    newRoomUser.setStartDate(localStartDate);
-                    newRoomUser.setEndDate(localEndDate);
-                    roomUserRepository.save(newRoomUser);
-                }
             });
+            if (countAvailableDay.get() != 0) {
+                RoomUser newRoomUser = new RoomUser();
+                newRoomUser.setUsersId(users.getUserId());
+                newRoomUser.setRoomsId(rooms.getRoomId());
+                newRoomUser.setStartDate(localStartDate);
+                newRoomUser.setEndDate(localEndDate);
+                rooms.setPopulation(rooms.getPopulation() + 1);
+                roomUserRepository.save(newRoomUser);
+            } else {
+                throw new CustomException("Phòng đã có người đặt vào thời gian này", HttpStatus.BAD_REQUEST);
+            }
         }
-
     }
 
+    @Override
+    public List<RoomDTO> getBookingRoomByUserId(Long id) {
+        List<RoomDTO> roomDTOList = new ArrayList<>();
+        List<RoomUser> roomUserList = roomUserRepository.findByUsersId(id);
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("EEE MMM dd yyyy");
+        roomUserList.forEach(roomUser -> {
+            Rooms room = roomRepository.findById(roomUser.getRoomsId()).orElseThrow();
+            List<Image> imageList = room.getRoomImage();
+            List<String> imageUrl = new ArrayList<>();
+            imageList.forEach(image -> {
+                imageUrl.add(image.getImageUrl());
+            });
+            RoomDTO roomDTO = RoomDTO.builder()
+                    .roomCode(room.getRoomCode())
+                    .roomName(room.getRoomName())
+                    .roomType(room.getRoomType().getTypeName())
+                    .roomRank(room.getRoomRank().getRankName())
+                    .description(room.getDescription())
+                    .pricePerNight(room.getPricePerNight())
+                    .population(room.getPopulation())
+                    .images(imageUrl)
+                    .startDate(roomUser.getStartDate().format(formatter))
+                    .endDate(roomUser.getEndDate().format(formatter))
+                    .build();
+            roomDTOList.add(roomDTO);
+        });
+        return roomDTOList;
+    }
 
     private PagingDTO<List<RoomDTO>> getPagingDTO(Page<Rooms> rooms) {
         List<RoomDTO> roomDTOList = rooms.getContent().stream()

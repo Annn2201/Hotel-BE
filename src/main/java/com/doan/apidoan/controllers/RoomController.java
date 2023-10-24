@@ -2,6 +2,7 @@ package com.doan.apidoan.controllers;
 
 import com.doan.apidoan.config.JwtUtilities;
 import com.doan.apidoan.dtos.RoomDTO;
+import com.doan.apidoan.models.RoomUser;
 import com.doan.apidoan.models.Users;
 import com.doan.apidoan.services.RoomService;
 import com.doan.apidoan.services.UserService;
@@ -49,6 +50,19 @@ public class RoomController {
             return new ResponseEntity<>("Đã đặt phòng thành công", HttpStatus.OK);
         } else {
             return new ResponseEntity<>("Có lỗi xảy ra khi đặt phòng", HttpStatus.BAD_REQUEST);
+        }
+    }
+    @GetMapping("/user-room")
+    public ResponseEntity<List<RoomDTO>> getRoomByUser(HttpServletRequest request) {
+        String authorizationHeader = request.getHeader("Authorization");
+        if (authorizationHeader != null && authorizationHeader.startsWith("Bearer ")) {
+            String token = authorizationHeader.substring(7);
+            String username = jwtUtilities.extractUsername(token);
+            Users user = userService.findUserByUsername(username);
+            List<RoomDTO> roomDTOList = roomService.getBookingRoomByUserId(user.getUserId());
+            return new ResponseEntity<>(roomDTOList, HttpStatus.OK);
+        } else {
+            return new ResponseEntity<>(null, HttpStatus.BAD_REQUEST);
         }
     }
 }

@@ -1,8 +1,4 @@
 package com.doan.apidoan.dtos;
-
-import com.doan.apidoan.models.Image;
-import com.doan.apidoan.models.RoomRanks;
-import com.doan.apidoan.models.RoomTypes;
 import lombok.*;
 
 import java.util.List;
@@ -21,4 +17,6 @@ public class RoomDTO {
     private String roomName;
     private List<String> images;
     private Integer population;
+    private String startDate;
+    private String endDate;
 }

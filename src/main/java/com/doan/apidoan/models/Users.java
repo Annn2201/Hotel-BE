@@ -43,8 +43,7 @@ public class Users implements Serializable, UserDetails {
     @Basic
     @Column(name = "password")
     private String password;
-    @Basic
-    @Column(name = "identify_number")
+
     private String identifyNumber;;
     @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(name = "users_roles",

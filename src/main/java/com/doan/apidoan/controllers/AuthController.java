@@ -6,6 +6,8 @@ import com.doan.apidoan.dtos.LoginDTO;
 import com.doan.apidoan.dtos.RegisterDTO;
 import com.doan.apidoan.models.Users;
 import com.doan.apidoan.services.UserService;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.BeanUtils;
 import org.springframework.http.HttpStatus;
@@ -14,6 +16,7 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.web.authentication.logout.SecurityContextLogoutHandler;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -49,5 +52,14 @@ public class AuthController {
                 user.getUsername(),
                 user.getEmail(),
                 roles));
+    }
+    @PostMapping("/logout")
+    public ResponseEntity<String> logout(HttpServletRequest request, HttpServletResponse response) {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        if (auth != null) {
+            new SecurityContextLogoutHandler().logout(request, response, auth);
+        }
+        response.setHeader("authorization", "");
+        return ResponseEntity.ok("Đã đăng xuất thành công");
     }
 }

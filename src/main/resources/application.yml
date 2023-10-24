@@ -16,7 +16,7 @@ spring:
     hibernate:
       ddl-auto: update
     generate-ddl: false
-    show-sql: true
+    show-sql: false
   thymeleaf:
     cache: false
     enabled: true
