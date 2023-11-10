@@ -33,5 +33,7 @@ public class RoomUser {
     @Id
     @Column(name = "id")
     private Long id;
+    private Boolean isCheckIn;
+    private Boolean isCheckOut;
 
 }

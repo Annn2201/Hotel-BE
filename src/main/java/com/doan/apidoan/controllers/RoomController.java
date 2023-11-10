@@ -5,6 +5,7 @@ import com.doan.apidoan.dtos.RoomDTO;
 import com.doan.apidoan.models.RoomUser;
 import com.doan.apidoan.models.Users;
 import com.doan.apidoan.services.RoomService;
+import com.doan.apidoan.services.RoomUserService;
 import com.doan.apidoan.services.UserService;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -16,12 +17,14 @@ import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Controller
 @RequiredArgsConstructor
 @RequestMapping("/api/v1")
 public class RoomController {
     private final RoomService roomService;
+    private final RoomUserService roomUserService;
     private final JwtUtilities jwtUtilities;
     private final UserService userService;
     @GetMapping("/rooms")
@@ -65,4 +68,23 @@ public class RoomController {
             return new ResponseEntity<>(null, HttpStatus.BAD_REQUEST);
         }
     }
+    @DeleteMapping("/user-room")
+    public ResponseEntity<?> deleteRoomByUser(HttpServletRequest request) {
+        String authorizationHeader = request.getHeader("Authorization");
+        if (authorizationHeader != null && authorizationHeader.startsWith("Bearer ")) {
+            String token = authorizationHeader.substring(7);
+            String username = jwtUtilities.extractUsername(token);
+            Users user = userService.findUserByUsername(username);
+            List<RoomDTO> roomDTOList = roomService.getBookingRoomByUserId(user.getUserId());
+            for (RoomDTO roomDTO : roomDTOList) {
+                if (roomDTO.getIsCheckOut() != null) {
+                    roomUserService.deleteBookingRoom(roomDTO.getRoomUserId());
+                }
+            }
+            return new ResponseEntity<>("Đã checkout thành công", HttpStatus.OK);
+        } else {
+            return new ResponseEntity<>(null, HttpStatus.BAD_REQUEST);
+        }
+    }
+
 }

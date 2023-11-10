@@ -9,6 +9,7 @@ import java.util.List;
 @AllArgsConstructor
 @Builder
 public class RoomDTO {
+    private Long roomUserId;
     private String roomCode;
     private String roomType;
     private String roomRank;
@@ -19,4 +20,6 @@ public class RoomDTO {
     private Integer population;
     private String startDate;
     private String endDate;
+    private Boolean isCheckIn;
+    private Boolean isCheckOut;
 }

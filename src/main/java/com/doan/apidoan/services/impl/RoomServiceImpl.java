@@ -146,6 +146,7 @@ public class RoomServiceImpl implements RoomService {
                 imageUrl.add(image.getImageUrl());
             });
             RoomDTO roomDTO = RoomDTO.builder()
+                    .roomUserId(roomUser.getId())
                     .roomCode(room.getRoomCode())
                     .roomName(room.getRoomName())
                     .roomType(room.getRoomType().getTypeName())
@@ -156,7 +157,8 @@ public class RoomServiceImpl implements RoomService {
                     .images(imageUrl)
                     .startDate(roomUser.getStartDate().format(formatter))
                     .endDate(roomUser.getEndDate().format(formatter))
-                    .build();
+                    .isCheckIn(roomUser.getIsCheckIn())
+                    .isCheckOut(roomUser.getIsCheckOut()).build();
             roomDTOList.add(roomDTO);
         });
         return roomDTOList;
