@@ -7,14 +7,17 @@ spring:
   application:
     name: API-doan
   datasource:
-    url: jdbc:mysql://localhost:3307/khachsan_doan
+    url: jdbc:mysql://viaduct.proxy.rlwy.net:40288/railway
     username: root
-    password: 123456
+    password: g1eF-236DE6ce6c4ADefa5HhFhF13--D
+#    url: jdbc:mysql://localhost:3307/khachsan_doan
+#    username: root
+#    password: 123456
     driver-class-name: com.mysql.cj.jdbc.Driver
   jpa:
     database-platform: org.hibernate.dialect.MySQL8Dialect
     hibernate:
-      ddl-auto: update
+      ddl-auto: none
     generate-ddl: false
     show-sql: false
   thymeleaf:
