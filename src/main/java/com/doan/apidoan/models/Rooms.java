@@ -38,8 +38,6 @@ public class Rooms {
     private String description;
     private Integer population;
     private String roomName;
-    private LocalDate startDate;
-    private LocalDate endDate;
     @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(name = "room_image",
             joinColumns = @JoinColumn(name = "room_id"),

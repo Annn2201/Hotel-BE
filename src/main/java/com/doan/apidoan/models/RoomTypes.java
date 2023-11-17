@@ -15,7 +15,6 @@ import java.util.Objects;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-@Table(name = "room_types", schema = "khachsan_doan", catalog = "")
 public class RoomTypes {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Id

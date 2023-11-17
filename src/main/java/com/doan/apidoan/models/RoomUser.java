@@ -10,7 +10,7 @@ import java.sql.Date;
 import java.time.LocalDate;
 import java.util.Objects;
 
-@Table(name = "room_user", schema = "khachsan_doan", catalog = "")
+
 @Getter
 @Setter
 @NoArgsConstructor
