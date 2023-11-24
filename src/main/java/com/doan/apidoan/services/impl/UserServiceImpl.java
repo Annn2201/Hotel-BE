@@ -1,5 +1,6 @@
 package com.doan.apidoan.services.impl;
 
+import com.doan.apidoan.dtos.ChangePasswordDTO;
 import com.doan.apidoan.dtos.UserDTO;
 import com.doan.apidoan.dtos.response.ResponseMessage;
 import com.doan.apidoan.exceptions.CustomException;
@@ -51,5 +52,14 @@ public class UserServiceImpl implements UserService {
     @Override
     public Users findUserByUsername(String username) {
         return userRepository.findByUsername(username).orElseThrow(() -> new CustomException("Không tìm thấy user", HttpStatus.BAD_REQUEST));
+    }
+
+    @Override
+    public void changePassword(Users users, ChangePasswordDTO changePasswordDTO) {
+        if (!passwordEncoder.matches(changePasswordDTO.getOldPassword(), users.getPassword())) {
+            throw new CustomException("Mat khau khong chinh xac", HttpStatus.BAD_REQUEST);
+        }
+        users.setPassword(passwordEncoder.encode(changePasswordDTO.getNewPassword()));
+        userRepository.save(users);
     }
 }

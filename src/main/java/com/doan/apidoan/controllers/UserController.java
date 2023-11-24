@@ -1,6 +1,7 @@
 package com.doan.apidoan.controllers;
 
 import com.doan.apidoan.config.JwtUtilities;
+import com.doan.apidoan.dtos.ChangePasswordDTO;
 import com.doan.apidoan.dtos.UserDTO;
 import com.doan.apidoan.models.Users;
 import com.doan.apidoan.services.UserService;
@@ -48,6 +49,21 @@ public class UserController {
             return new ResponseEntity<>("Đã cập nhật thông tin người dùng", HttpStatus.OK);
         } else {
             return new ResponseEntity<>("Có lỗi xảy ra trong quá trình cập nhật", HttpStatus.BAD_REQUEST);
+        }
+    }
+
+    @PostMapping("/user/change-password")
+    public ResponseEntity<?> changePassword(@RequestBody ChangePasswordDTO changePasswordDTO,
+                                            HttpServletRequest request) {
+        String authorizationHeader = request.getHeader("Authorization");
+        if (authorizationHeader != null && authorizationHeader.startsWith("Bearer ")) {
+            String token = authorizationHeader.substring(7);
+            String username = jwtUtilities.extractUsername(token);
+            Users user = userService.findUserByUsername(username);
+            userService.changePassword(user, changePasswordDTO);
+            return new ResponseEntity<>("Đã thay đổi mật khách hãi", HttpStatus.OK);
+        } else {
+            return new ResponseEntity<>("Có lỗi xảy ra trong quá trình thay đổi mật khách hãi", HttpStatus.BAD_REQUEST);
         }
     }
 }
