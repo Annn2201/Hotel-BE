@@ -71,7 +71,8 @@ public class RoomServiceImpl implements RoomService {
 
         if ("population".equals(sortBy)) {
             roomDTOs.sort(Comparator.comparing(RoomDTO::getPopulation).reversed());
-        } else if ("otherField".equals(sortBy)) {
+        } else if ("pricePerNight".equals(sortBy)) {
+            roomDTOs.sort(Comparator.comparing(RoomDTO::getPricePerNight));
         }
         return roomDTOs;
 
