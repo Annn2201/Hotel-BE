@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 @Controller
@@ -79,6 +80,7 @@ public class RoomController {
             for (RoomDTO roomDTO : roomDTOList) {
                 if (roomDTO.getIsCheckOut() != null) {
                     roomUserService.deleteBookingRoom(roomDTO.getRoomUserId());
+                    return new ResponseEntity<>("Đã checkout thành công", HttpStatus.OK);
                 }
             }
             return new ResponseEntity<>("Đã checkout thành công", HttpStatus.OK);
@@ -87,4 +89,21 @@ public class RoomController {
         }
     }
 
+    @DeleteMapping("/user-room/{roomUserId}")
+    public ResponseEntity<?> deleteRoomByUser(@PathVariable("roomUserId") String roomUserId, HttpServletRequest request) {
+        String authorizationHeader = request.getHeader("Authorization");
+        if (authorizationHeader != null && authorizationHeader.startsWith("Bearer ")) {
+            String token = authorizationHeader.substring(7);
+            String username = jwtUtilities.extractUsername(token);
+            Users user = userService.findUserByUsername(username);
+            List<RoomDTO> roomDTOList = roomService.getBookingRoomByUserId(user.getUserId());
+            for (RoomDTO roomDTO : roomDTOList) {
+                if (Objects.equals(Long.parseLong(roomUserId), roomDTO.getRoomUserId())) {
+                    roomUserService.deleteBookingRoom(Long.parseLong(roomUserId));
+                    return new ResponseEntity<>("Đã hủy phòng thành công!", HttpStatus.OK);
+                }
+            }
+        }
+        return new ResponseEntity<>("Hủy phòng thất bại vui lòng thử lại!", HttpStatus.BAD_REQUEST);
+    }
 }
