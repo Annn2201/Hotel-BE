@@ -104,6 +104,7 @@ public class RoomServiceImpl implements RoomService {
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("EEE MMM dd yyyy");
         LocalDate localStartDate = LocalDate.parse(startDate,formatter);
         LocalDate localEndDate = LocalDate.parse(endDate,formatter);
+        List<LocalDate> localDateList = new ArrayList<>();
         Rooms rooms = roomRepository.findByRoomCode(roomCode).orElseThrow(() -> new CustomException("Không tìm thấy phòng", HttpStatus.BAD_REQUEST));
         List<RoomUser> roomUserList = roomUserRepository.findByRoomsId(rooms.getRoomId());
         if (roomUserList.isEmpty()) {
@@ -115,11 +116,11 @@ public class RoomServiceImpl implements RoomService {
             roomUserRepository.save(newRoomUser);
         } else {
             roomUserList.forEach(roomUser -> {
-                if(localStartDate.isEqual(roomUser.getEndDate())
-                || localStartDate.isAfter(roomUser.getEndDate())) {
-                    countAvailableDay.getAndIncrement();
-                }
+                localDateList.add(roomUser.getEndDate());
             });
+            if (localEndDate.isAfter(localDateList.get(localDateList.size() - 1))) {
+                countAvailableDay.getAndIncrement();
+            }
             if (countAvailableDay.get() != 0) {
                 RoomUser newRoomUser = new RoomUser();
                 newRoomUser.setUsersId(users.getUserId());
